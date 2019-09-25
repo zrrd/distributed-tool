@@ -15,16 +15,6 @@
         <module>distributed-lock-redis-lettuce-adapter</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>cn.learn</groupId>
-                <artifactId>distributed-lock</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <build>
         <plugins>
             <!-- 设置源文件编码方式 -->

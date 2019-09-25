@@ -10,5 +10,5 @@
     <root level="info">
         <appender-ref ref="console"/>
     </root>
-
+    <logger name="cn.learn.distributed.lock.adapter.redis.lettuce" level="DEBUG"/>
 </configuration>

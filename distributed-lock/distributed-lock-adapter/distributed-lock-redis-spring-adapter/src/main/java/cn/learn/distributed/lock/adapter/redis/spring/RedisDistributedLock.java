@@ -1,7 +1,6 @@
-package cn.learn.distributed.lock.adapter.redis.lettuce;
+package cn.learn.distributed.lock.adapter.redis.spring;
 
 import cn.learn.distributed.lock.core.DistributedLock;
-import io.lettuce.core.RedisClient;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,12 +8,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
- * 基于redis的分布式锁
- *
  * @author shaoyijiong
- * @date 2019/9/24
+ * @date 2019/9/25
  */
 @Slf4j
 @Setter(AccessLevel.PRIVATE)
@@ -25,10 +23,7 @@ public class RedisDistributedLock implements DistributedLock {
    * 锁id  redis中的key
    */
   private String lockId;
-  /**
-   * redis 客户端
-   */
-  private RedisClient redisClient;
+
   /**
    * 当前获取锁的线程
    */
@@ -50,12 +45,11 @@ public class RedisDistributedLock implements DistributedLock {
    * 构造
    *
    * @param lockId 对应redis 的key
-   * @param redisClient lettuce 操作客户端
+   * @param redisTemplate lettuce 操作客户端
    */
-  public RedisDistributedLock(String lockId, RedisClient redisClient) {
+  public RedisDistributedLock(String lockId, StringRedisTemplate redisTemplate) {
     this.lockId = lockId;
-    this.redisClient = redisClient;
-    this.redisOperation = new RedisOperation(redisClient);
+    this.redisOperation = new RedisOperation(redisTemplate);
     state = new AtomicInteger();
   }
 
@@ -63,14 +57,12 @@ public class RedisDistributedLock implements DistributedLock {
    * 构造
    *
    * @param lockId 对应redis 的key
-   * @param redisClient lettuce 操作客户端
    * @param retryAwait 重试间隔
    * @param lockTimeout redis 锁最大时长
    */
-  public RedisDistributedLock(String lockId, RedisClient redisClient, int retryAwait, int lockTimeout) {
+  public RedisDistributedLock(String lockId, StringRedisTemplate redisTemplate, int retryAwait, int lockTimeout) {
     this.lockId = lockId;
-    this.redisClient = redisClient;
-    this.redisOperation = new RedisOperation(redisClient, retryAwait, lockTimeout);
+    this.redisOperation = new RedisOperation(redisTemplate, retryAwait, lockTimeout);
     state = new AtomicInteger();
   }
 

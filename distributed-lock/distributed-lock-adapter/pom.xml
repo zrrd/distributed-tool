@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>distributed-lock-redis-lettuce-adapter</module>
+        <module>distributed-lock-redis-spring-adapter</module>
     </modules>
 
     <build>

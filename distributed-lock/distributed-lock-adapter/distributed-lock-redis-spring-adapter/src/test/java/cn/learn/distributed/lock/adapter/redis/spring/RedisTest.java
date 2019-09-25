@@ -1,62 +1,53 @@
-import cn.learn.distributed.lock.adapter.redis.lettuce.RedisDistributedLock;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.ScriptOutputType;
-import io.lettuce.core.SetArgs;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.api.sync.RedisCommands;
+package cn.learn.distributed.lock.adapter.redis.spring;
+
+import cn.learn.distributed.lock.adapter.redis.spring.config.RedisLockBuilder;
+import cn.learn.distributed.lock.core.DistributedLock;
 import java.time.Duration;
-import org.junit.jupiter.api.Test;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author shaoyijiong
- * @date 2019/9/24
+ * @date 2019/9/25
  */
-@SuppressWarnings("all")
+@SpringBootTest
+@RunWith(SpringRunner.class)
 public class RedisTest {
 
-  /**
-   * 加锁测试
-   */
+  @Autowired
+  private StringRedisTemplate redisTemplate;
+
   @Test
   public void test1() {
-    RedisClient redisClient = RedisClient.create("redis://localhost");
-    StatefulRedisConnection<String, String> connect = redisClient.connect();
-    RedisCommands<String, String> commands = connect.sync();
-    SetArgs args = SetArgs.Builder.nx().px(9999_000);
-    String value = commands.set("k", "v", args);
-    System.out.println(value);
-    connect.close();
-    redisClient.shutdown();
+    Boolean aBoolean = redisTemplate.opsForValue().setIfAbsent("a", "b", 60_000, TimeUnit.MILLISECONDS);
+    System.out.println(aBoolean);
   }
 
-  /**
-   * 解锁测试
-   */
   @Test
   public void test2() {
-    RedisClient redisClient = RedisClient.create("redis://localhost");
-    StatefulRedisConnection<String, String> connect = redisClient.connect();
-    RedisCommands<String, String> commands = connect.sync();
-
     String luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then "
         + "return redis.call('del', KEYS[1]) else return 0 end";
-    Object eval = commands.eval(luaScript, ScriptOutputType.INTEGER, new String[]{"k"}, "v");
-    System.out.println(eval);
-    connect.close();
-    redisClient.shutdown();
+    RedisScript script = RedisScript.of(luaScript, Long.class);
+    Long execute = redisTemplate.<Long>execute(script, Collections.singletonList("a"), "b");
+    System.out.println(execute);
   }
 
-  RedisDistributedLock lock = new RedisDistributedLock("testLock", RedisClient.create("redis://47.99.73.15"));
-  private static volatile int i = 0;
+  @Autowired
+  private RedisLockBuilder builder;
+  private volatile int i;
 
-
-  /**
-   * 并发测试
-   */
   @Test
   public void test3() throws InterruptedException {
+    DistributedLock lock = builder.build("lockTest");
     Thread t1 = new Thread(() -> {
-      for (int j = 0; j < 1000; j++) {
+      for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
           lock.unLock();
@@ -67,7 +58,7 @@ public class RedisTest {
     });
 
     Thread t2 = new Thread(() -> {
-      for (int j = 0; j < 1000; j++) {
+      for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
           lock.unLock();
@@ -78,7 +69,7 @@ public class RedisTest {
     });
 
     Thread t3 = new Thread(() -> {
-      for (int j = 0; j < 1000; j++) {
+      for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
           lock.unLock();
@@ -89,7 +80,7 @@ public class RedisTest {
     });
 
     Thread t4 = new Thread(() -> {
-      for (int j = 0; j < 1000; j++) {
+      for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
           lock.unLock();
@@ -111,13 +102,12 @@ public class RedisTest {
     System.out.println(i);
   }
 
-
   /**
    * 任务时长超过redis测试
    */
   @Test
   public void test4() throws InterruptedException {
-
+    DistributedLock lock = builder.build("lockTest");
     Thread t1 = new Thread(() -> {
       if (lock.tryLock(Duration.ofSeconds(100))) {
         System.out.println("t1 get the lock");

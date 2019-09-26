@@ -19,7 +19,7 @@ public class RedisTest {
    */
   @Test
   public void test1() {
-    RedisClient redisClient = RedisClient.create("redis://localhost");
+    RedisClient redisClient = RedisClient.create("redis://127.0.0.1");
     StatefulRedisConnection<String, String> connect = redisClient.connect();
     RedisCommands<String, String> commands = connect.sync();
     SetArgs args = SetArgs.Builder.nx().px(9999_000);
@@ -34,7 +34,7 @@ public class RedisTest {
    */
   @Test
   public void test2() {
-    RedisClient redisClient = RedisClient.create("redis://localhost");
+    RedisClient redisClient = RedisClient.create("redis://127.0.0.1");
     StatefulRedisConnection<String, String> connect = redisClient.connect();
     RedisCommands<String, String> commands = connect.sync();
 
@@ -46,7 +46,7 @@ public class RedisTest {
     redisClient.shutdown();
   }
 
-  RedisDistributedLock lock = new RedisDistributedLock("testLock", RedisClient.create("redis://47.99.73.15"));
+  RedisDistributedLock lock = new RedisDistributedLock("testLock", RedisClient.create("redis://127.0.0.1"));
   private static volatile int i = 0;
 
 

@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 public class LettuceLockConfiguration implements LockConfiguration {
 
-  private String host = "localhost";
+  private String host = "127.0.0.1";
   private int port = 6379;
   private int database = 0;
   private String password;

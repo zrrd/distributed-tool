@@ -1,7 +1,9 @@
 package cn.learn.distributed.lock.adapter.redis.spring.config;
 
 import cn.learn.distributed.lock.adapter.redis.spring.RedisDistributedLock;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import cn.learn.distributed.lock.core.DistributedLock;
+import cn.learn.distributed.lock.core.LockBuilder;
+import cn.learn.distributed.lock.core.LockConfiguration;
 
 /**
  * lock 构造器
@@ -9,20 +11,26 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  * @author shaoyijiong
  * @date 2019/9/25
  */
-public class RedisLockBuilder {
+public class RedisLockBuilder implements LockBuilder {
 
 
-  private int retryAwait;
-  private int lockTimeout;
-  private final StringRedisTemplate stringRedisTemplate;
+  private final LockConfiguration lockConfiguration;
 
-  public RedisLockBuilder(StringRedisTemplate stringRedisTemplate, RedisLockProperties redisLockProperties) {
-    this.stringRedisTemplate = stringRedisTemplate;
-    this.retryAwait = redisLockProperties.getRetryAwait();
-    this.lockTimeout = redisLockProperties.getLockTimeout();
+
+  public RedisLockBuilder(LockConfiguration lockConfiguration) {
+    this.lockConfiguration = lockConfiguration;
   }
 
-  public RedisDistributedLock build(String lockId) {
-    return new RedisDistributedLock(lockId, stringRedisTemplate, retryAwait, lockTimeout);
+
+  @Override
+  public DistributedLock build(String lockId) {
+    return build(lockId, lockConfiguration);
+  }
+
+  @Override
+  public DistributedLock build(String lockId, LockConfiguration configuration) {
+    SpringLockConfiguration springLockConfiguration = (SpringLockConfiguration) configuration;
+    return new RedisDistributedLock(lockId, springLockConfiguration.getRedisTemplate(),
+        springLockConfiguration.getRetryAwait(), springLockConfiguration.getLockTimeout());
   }
 }

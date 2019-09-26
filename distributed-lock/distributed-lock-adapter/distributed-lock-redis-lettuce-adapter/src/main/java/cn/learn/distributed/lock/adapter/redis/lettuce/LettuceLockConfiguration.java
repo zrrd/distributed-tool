@@ -1,5 +1,6 @@
 package cn.learn.distributed.lock.adapter.redis.lettuce;
 
+import cn.learn.distributed.lock.core.LockConfiguration;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI.Builder;
 import java.time.Duration;
@@ -13,21 +14,22 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class LettuceLockConfiguration {
+public class LettuceLockConfiguration implements LockConfiguration {
 
   private String host = "localhost";
   private int port = 6379;
   private int database = 0;
   private String password;
   private Duration timeout;
+  private RedisClient redisClient;
 
   /**
-   * 创建一个redisClient 客户端
+   * 初始化一个redisClient客户端
    */
-  public RedisClient createRedisClient() {
+  public void initRedisClient() {
     Builder builder = Builder.redis(host, port).withDatabase(database);
     Optional.ofNullable(password).ifPresent(p -> builder.withPassword(password));
     Optional.ofNullable(timeout).ifPresent(t -> builder.withTimeout(timeout));
-    return RedisClient.create(builder.build());
+    redisClient = RedisClient.create(builder.build());
   }
 }

@@ -16,7 +16,8 @@ public class RedisLockAutoConfiguration {
   @Bean
   public RedisLockBuilder redisLockBuilder(StringRedisTemplate stringRedisTemplate,
       RedisLockProperties redisLockProperties) {
-    return new RedisLockBuilder(stringRedisTemplate, redisLockProperties);
+    return new RedisLockBuilder(new SpringLockConfiguration(stringRedisTemplate, redisLockProperties.getRetryAwait(),
+        redisLockProperties.getLockTimeout()));
   }
 
 }

@@ -1,15 +1,14 @@
 package cn.learn.distributed.lock.adapter.redis.spring;
 
-import cn.learn.distributed.lock.core.Callback;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
 import cn.learn.distributed.lock.adapter.redis.spring.config.RedisLockBuilder;
+import cn.learn.distributed.lock.core.Callback;
 import cn.learn.distributed.lock.core.DistributedLock;
 import cn.learn.distributed.lock.core.DistributedLockTemplate;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,12 +29,18 @@ public class RedisTest {
   @Autowired
   private StringRedisTemplate redisTemplate;
 
+  /**
+   * 创建key测试
+   */
   @Test
   public void test1() {
     Boolean aBoolean = redisTemplate.opsForValue().setIfAbsent("a", "b", 60_000, TimeUnit.MILLISECONDS);
     System.out.println(aBoolean);
   }
 
+  /**
+   * 删除key测试
+   */
   @Test
   public void test2() {
     String luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then "
@@ -49,6 +54,9 @@ public class RedisTest {
   private RedisLockBuilder builder;
   private volatile int i;
 
+  /**
+   * 并发测试
+   */
   @Test
   public void test3() throws InterruptedException {
     DistributedLock lock = builder.build("lockTest");
@@ -153,6 +161,9 @@ public class RedisTest {
   @Autowired
   private DistributedLockTemplate template;
 
+  /**
+   * DistributedLockTemplate 测试
+   */
   @Test
   public void test5() throws InterruptedException {
     int size = 10;

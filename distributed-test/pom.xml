@@ -9,12 +9,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>distributed-lock</artifactId>
+    <artifactId>distributed-test</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>distributed-lock-core</module>
-        <module>distributed-lock-adapter</module>
-        <module>distributed-lock-extension</module>
+        <module>distributed-test-01</module>
+        <module>distributed-test-02</module>
     </modules>
 
     <build>

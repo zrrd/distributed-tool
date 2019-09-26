@@ -1,7 +1,13 @@
 package cn.learn.distributed.lock.adapter.redis.spring;
 
+import cn.learn.distributed.lock.core.Callback;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 import cn.learn.distributed.lock.adapter.redis.spring.config.RedisLockBuilder;
 import cn.learn.distributed.lock.core.DistributedLock;
+import cn.learn.distributed.lock.core.DistributedLockTemplate;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -142,5 +148,46 @@ public class RedisTest {
     t2.start();
     t1.join();
     t2.join();
+  }
+
+  @Autowired
+  private DistributedLockTemplate template;
+
+  @Test
+  public void test5() throws InterruptedException {
+    int size = 10;
+    CountDownLatch latch = new CountDownLatch(size);
+    CountDownLatch join = new CountDownLatch(size);
+    ExecutorService executor = Executors.newFixedThreadPool(size);
+    for (int j = 0; j < size; j++) {
+      executor.submit(() -> {
+        // 等待同步执行
+        try {
+          latch.await();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        for (int k = 0; k < 100; k++) {
+          template.invoke("lock-test", Duration.ofSeconds(10), new Callback<Void>() {
+            @Override
+            public Void onGetLock() {
+              i++;
+              return null;
+            }
+
+            @Override
+            public Void onTimeout() {
+              System.out.println(Thread.currentThread() + "not get lock");
+              return null;
+            }
+          });
+        }
+        join.countDown();
+      });
+      latch.countDown();
+    }
+
+    join.await();
+    System.out.println(i);
   }
 }

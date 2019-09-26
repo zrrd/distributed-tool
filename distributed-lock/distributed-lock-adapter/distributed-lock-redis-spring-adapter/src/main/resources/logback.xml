@@ -10,6 +10,6 @@
     <root level="info">
         <appender-ref ref="console"/>
     </root>
-    <logger name="cn.learn.distributed.lock.adapter.redis.spring" level="DEBUG"/>
+    <logger name="cn.learn.distributed.lock.adapter.redis.spring" level="info"/>
 
 </configuration>

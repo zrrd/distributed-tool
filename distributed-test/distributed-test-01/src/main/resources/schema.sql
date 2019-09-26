@@ -9,4 +9,6 @@ CREATE TABLE `learn`.`lock_test`(
     PRIMARY KEY (id)
 );
 
-INSERT INTO `learn`.`lock_test` VALUE (null, 0);
+INSERT INTO `learn`.`lock_test` VALUE (1, 0);
+
+INSERT INTO `learn`.`lock_test` VALUE (2, 0);

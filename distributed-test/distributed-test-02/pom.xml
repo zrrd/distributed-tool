@@ -37,6 +37,11 @@
             <artifactId>distributed-lock-redis-spring-adapter</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cn.learn</groupId>
+            <artifactId>distributed-lock-scheduler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

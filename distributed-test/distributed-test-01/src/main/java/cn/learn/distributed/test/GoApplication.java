@@ -11,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties
 @SpringBootApplication
 public class GoApplication {
+
   public static void main(String[] args) {
     SpringApplication.run(GoApplication.class, args);
   }

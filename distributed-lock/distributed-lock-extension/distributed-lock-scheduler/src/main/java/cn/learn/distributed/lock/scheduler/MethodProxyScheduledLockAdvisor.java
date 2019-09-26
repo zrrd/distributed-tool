@@ -83,15 +83,14 @@ public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
       if (schedulerLock == null) {
         return invocation.proceed();
       }
-      String lockId = schedulerLock.lockId();
-      if (Strings.isNullOrEmpty(lockId)) {
-        // 为空的话 默认为方法名
-        lockId = invocation.getMethod().getName();
-      }
+      // 为空的话 默认为方法名
+      String lockId =
+          Strings.isNullOrEmpty(schedulerLock.lockId()) ? invocation.getMethod().getName() : schedulerLock.lockId();
       distributedLockTemplate.invoke(lockId, schedulerLock.timeout(), schedulerLock.unit(),
           new Callback<Void>() {
             @Override
             public Void onGetLock() {
+              log.debug("invoke scheduler [{}]", lockId);
               try {
                 // 拿到锁执行
                 invocation.proceed();
@@ -103,6 +102,7 @@ public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
             @Override
             public Void onTimeout() {
+              log.debug("pass scheduler [{}]", lockId);
               // 没有拿到锁 不执行
               return null;
             }

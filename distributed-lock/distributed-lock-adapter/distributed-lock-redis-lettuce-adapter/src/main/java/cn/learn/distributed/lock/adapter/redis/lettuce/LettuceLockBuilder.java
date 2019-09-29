@@ -19,7 +19,7 @@ public class LettuceLockBuilder implements LockBuilder {
    * 使用默认配置
    */
   public LettuceLockBuilder() {
-    this.lockConfiguration = new LettuceLockConfiguration();
+    this.lockConfiguration = new LettuceLockConfiguration().initRedisClient();
   }
 
   /**

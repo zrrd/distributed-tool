@@ -6,6 +6,7 @@ import cn.learn.distributed.lock.core.DistributedLockTemplate;
 import cn.learn.distributed.lock.core.LockBuilder;
 import cn.learn.distributed.lock.core.LockConfiguration;
 import com.google.common.base.Strings;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -13,6 +14,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
@@ -31,17 +33,21 @@ public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
   private final AnnotationMatchingPointcut pointcut = AnnotationMatchingPointcut
       .forMethodAnnotation(SchedulerLock.class);
 
-
   /**
    * 切面 定义执行方法
    */
   private Advice advice;
 
+  public MethodProxyScheduledLockAdvisor(DistributedLockTemplate distributedLockTemplate,
+      ApplicationContext applicationContext) {
+    String keyPrefix = "";
+    String[] activeProfiles = applicationContext.getEnvironment().getActiveProfiles();
+    if (activeProfiles.length > 0) {
+      keyPrefix = activeProfiles[0] + ":";
+    }
+    this.advice = new LockingInterceptor(distributedLockTemplate, keyPrefix);
 
-  public MethodProxyScheduledLockAdvisor(DistributedLockTemplate distributedLockTemplate) {
-    this.advice = new LockingInterceptor(distributedLockTemplate);
   }
-
 
   @Override
   public Pointcut getPointcut() {
@@ -55,19 +61,29 @@ public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
 
   private static class LockingInterceptor implements MethodInterceptor {
 
-
+    /**
+     * redis 前缀
+     */
+    private String keyPrefix;
     private final DistributedLockTemplate distributedLockTemplate;
 
-    public LockingInterceptor(LockBuilder lockBuilder, LockConfiguration lockConfiguration) {
+    public LockingInterceptor(LockBuilder lockBuilder, LockConfiguration lockConfiguration, String keyPrefix) {
       this.distributedLockTemplate = new DefaultDistributedLockTemplate(lockBuilder, lockConfiguration);
+      setKeyPrefix(keyPrefix);
     }
 
-    public LockingInterceptor(LockBuilder lockBuilder) {
+    public LockingInterceptor(LockBuilder lockBuilder, String keyPrefix) {
       this.distributedLockTemplate = new DefaultDistributedLockTemplate(lockBuilder);
+      setKeyPrefix(keyPrefix);
     }
 
-    public LockingInterceptor(DistributedLockTemplate distributedLockTemplate) {
+    public LockingInterceptor(DistributedLockTemplate distributedLockTemplate, String keyPrefix) {
       this.distributedLockTemplate = distributedLockTemplate;
+      setKeyPrefix(keyPrefix);
+    }
+
+    public void setKeyPrefix(String keyPrefix) {
+      this.keyPrefix = keyPrefix == null ? "" : keyPrefix;
     }
 
     @Override
@@ -84,8 +100,8 @@ public class MethodProxyScheduledLockAdvisor extends AbstractPointcutAdvisor {
         return invocation.proceed();
       }
       // 为空的话 默认为方法名
-      String lockId =
-          Strings.isNullOrEmpty(schedulerLock.lockId()) ? invocation.getMethod().getName() : schedulerLock.lockId();
+      String lockId = keyPrefix + (Strings.isNullOrEmpty(schedulerLock.lockId()) ? invocation.getMethod().getName()
+          : schedulerLock.lockId());
       distributedLockTemplate.invoke(lockId, schedulerLock.timeout(), schedulerLock.unit(),
           new Callback<Void>() {
             @Override

@@ -64,7 +64,7 @@ public class RedisTest {
       for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -75,7 +75,7 @@ public class RedisTest {
       for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -86,7 +86,7 @@ public class RedisTest {
       for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -97,7 +97,7 @@ public class RedisTest {
       for (int j = 0; j < 100; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -130,7 +130,7 @@ public class RedisTest {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } finally {
-          lock.unLock();
+          lock.unlock();
           System.out.println("t1 unlock");
         }
       }
@@ -145,7 +145,7 @@ public class RedisTest {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } finally {
-          lock.unLock();
+          lock.unlock();
           System.out.println("t2 unlock");
         }
       }

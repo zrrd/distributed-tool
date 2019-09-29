@@ -16,7 +16,7 @@ import lombok.Setter;
 @Setter
 public class LettuceLockConfiguration implements LockConfiguration {
 
-  private String host = "127.0.0.1";
+  private String host = "47.99.73.15";
   private int port = 6379;
   private int database = 0;
   private String password;
@@ -26,10 +26,11 @@ public class LettuceLockConfiguration implements LockConfiguration {
   /**
    * 初始化一个redisClient客户端
    */
-  public void initRedisClient() {
+  public LettuceLockConfiguration initRedisClient() {
     Builder builder = Builder.redis(host, port).withDatabase(database);
     Optional.ofNullable(password).ifPresent(p -> builder.withPassword(password));
     Optional.ofNullable(timeout).ifPresent(t -> builder.withTimeout(timeout));
     redisClient = RedisClient.create(builder.build());
+    return this;
   }
 }

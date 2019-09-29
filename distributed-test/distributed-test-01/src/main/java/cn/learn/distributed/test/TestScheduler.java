@@ -26,7 +26,7 @@ public class TestScheduler {
   }
 
   @Scheduled(cron = "0/15 * * * * *")
-  public void testGoUnLock() {
+  public void testGounlock() {
     System.out.println("start unlock");
     optSql(2);
   }

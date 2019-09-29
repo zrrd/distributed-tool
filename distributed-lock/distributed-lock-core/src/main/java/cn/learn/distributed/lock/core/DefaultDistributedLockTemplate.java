@@ -38,7 +38,7 @@ public class DefaultDistributedLockTemplate implements DistributedLockTemplate {
       log.error(e.getMessage(), e);
     } finally {
       if (getLock) {
-        lock.unLock();
+        lock.unlock();
       }
     }
     return null;

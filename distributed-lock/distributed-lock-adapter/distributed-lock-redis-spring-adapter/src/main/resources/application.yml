@@ -1,6 +1,8 @@
 spring:
+  profiles:
+    active:
   redis:
-    host: 127.0.0.1
+    host: 47.99.73.15
 distributed:
   lock:
     redis:

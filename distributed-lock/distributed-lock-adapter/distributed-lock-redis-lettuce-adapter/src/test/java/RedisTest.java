@@ -19,7 +19,7 @@ public class RedisTest {
    */
   @Test
   public void test1() {
-    RedisClient redisClient = RedisClient.create("redis://127.0.0.1");
+    RedisClient redisClient = RedisClient.create("redis://47.99.73.15");
     StatefulRedisConnection<String, String> connect = redisClient.connect();
     RedisCommands<String, String> commands = connect.sync();
     SetArgs args = SetArgs.Builder.nx().px(9999_000);
@@ -34,7 +34,7 @@ public class RedisTest {
    */
   @Test
   public void test2() {
-    RedisClient redisClient = RedisClient.create("redis://127.0.0.1");
+    RedisClient redisClient = RedisClient.create("redis://47.99.73.15");
     StatefulRedisConnection<String, String> connect = redisClient.connect();
     RedisCommands<String, String> commands = connect.sync();
 
@@ -46,7 +46,7 @@ public class RedisTest {
     redisClient.shutdown();
   }
 
-  RedisDistributedLock lock = new RedisDistributedLock("testLock", RedisClient.create("redis://127.0.0.1"));
+  RedisDistributedLock lock = new RedisDistributedLock("testLock", RedisClient.create("redis://47.99.73.15"));
   private static volatile int i = 0;
 
 
@@ -59,7 +59,7 @@ public class RedisTest {
       for (int j = 0; j < 1000; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -70,7 +70,7 @@ public class RedisTest {
       for (int j = 0; j < 1000; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -81,7 +81,7 @@ public class RedisTest {
       for (int j = 0; j < 1000; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -92,7 +92,7 @@ public class RedisTest {
       for (int j = 0; j < 1000; j++) {
         if (lock.tryLock(Duration.ofSeconds(10))) {
           i++;
-          lock.unLock();
+          lock.unlock();
         } else {
           System.out.println("not get");
         }
@@ -126,7 +126,7 @@ public class RedisTest {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } finally {
-          lock.unLock();
+          lock.unlock();
           System.out.println("t1 unlock");
         }
       }
@@ -141,7 +141,7 @@ public class RedisTest {
         } catch (InterruptedException e) {
           e.printStackTrace();
         } finally {
-          lock.unLock();
+          lock.unlock();
           System.out.println("t2 unlock");
         }
       }

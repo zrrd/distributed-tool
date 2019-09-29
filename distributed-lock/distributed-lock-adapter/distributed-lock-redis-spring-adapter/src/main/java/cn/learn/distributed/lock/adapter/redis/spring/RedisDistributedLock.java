@@ -106,7 +106,7 @@ public class RedisDistributedLock implements DistributedLock {
   }
 
   @Override
-  public void unLock() {
+  public void unlock() {
     int c = getState().decrementAndGet();
     String lockValue = threadLocalLockValue.get();
     // t1 t2 两个任务 , t1的任务时长超过redis的锁时长 , 导致t1还在进行任务的时候t2拿到了锁 , 这时候锁的拥有者线程为t2 ,

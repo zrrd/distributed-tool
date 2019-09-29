@@ -39,5 +39,5 @@ public interface DistributedLock {
   /**
    * 解锁
    */
-  void unLock();
+  void unlock();
 }

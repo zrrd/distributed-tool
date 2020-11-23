@@ -27,7 +27,7 @@ public class RedisOperation {
    */
   private int lockTimeout = 60_000;
 
-  private StringRedisTemplate redisTemplate;
+  private final StringRedisTemplate redisTemplate;
 
   /**
    * 简单构造
@@ -56,10 +56,14 @@ public class RedisOperation {
     if (time < 0) {
       return null;
     }
+    // 自旋结束时间
     final long deadline = System.nanoTime() + unit.toNanos(time);
     String lockValue;
+    // 整个过程就是 1. 尝试获取锁 2. 判断是否获取锁成功或到时间跳出循环 3. 休眠一定时间结束再进入循环
     for (; ; ) {
+      // 尝试获取从redis中获取锁
       lockValue = createKey(lockId);
+      // 自旋 直到 1. 获取锁成功 2. 当前时间大于自旋结束时间
       if (lockValue != null) {
         break;
       }
@@ -67,12 +71,14 @@ public class RedisOperation {
       if (time <= 0L) {
         break;
       }
+      // 当前线程休眠retryAwait时间 , 期间会让出 cpu
       LockSupport.parkNanos(this, TimeUnit.MILLISECONDS.toNanos(retryAwait));
     }
     return lockValue;
   }
 
   void unlockRedisLock(String key, String value) {
+    // 执行 Lua 脚本释放锁
     String luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then "
         + "return redis.call('del', KEYS[1]) else return 0 end";
     RedisScript script = RedisScript.of(luaScript, Long.class);
@@ -80,8 +86,11 @@ public class RedisOperation {
   }
 
   private String createKey(String lockId) {
+    // 随机值
     String value = lockId + ":" + UUID.randomUUID();
+    // SET resource_name random_value NX PX 30000
     Boolean success = redisTemplate.opsForValue().setIfAbsent(lockId, value, lockTimeout, TimeUnit.MILLISECONDS);
+    // 成功返回随机值 , 否则返回 null
     if (success != null && success) {
       return value;
     }

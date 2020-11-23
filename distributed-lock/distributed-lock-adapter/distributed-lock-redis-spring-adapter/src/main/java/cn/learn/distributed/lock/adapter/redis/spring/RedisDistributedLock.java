@@ -23,7 +23,6 @@ public class RedisDistributedLock implements DistributedLock {
    * 锁id  redis中的key
    */
   private String lockId;
-
   /**
    * 当前获取锁的线程
    */
@@ -84,18 +83,24 @@ public class RedisDistributedLock implements DistributedLock {
     // 当前线程为持有锁的线程
     if (exclusiveOwnerThread != null && current == exclusiveOwnerThread) {
       log.debug("thread:[{}] ReenTrantLock", current);
+      // 如果当前线程即为持有锁的线程 重入次数加一 返回成功
       state.incrementAndGet();
       return true;
     }
+    // 实际操作 Redis 加锁
     String lockValue = redisOperation.tryRedisLock(lockId, timeout, unit);
     // 成功获取到redis锁
     if (lockValue != null) {
+      // 重入次数加一
       state.incrementAndGet();
+      // 设置持有锁的线程为当前线程
       setExclusiveOwnerThread(current);
+      // 在threadLocal中保存随机值用于后续解锁
       threadLocalLockValue.set(lockValue);
       log.debug("thread:[{}],lockId[{}],get the lock success,lockValue:[{}]", current, lockId, lockValue);
       return true;
     }
+    // 未获取到锁
     log.debug("thread[{}],lockId[{}],get the lock fail", current, lockId);
     return false;
   }
@@ -107,7 +112,9 @@ public class RedisDistributedLock implements DistributedLock {
 
   @Override
   public void unlock() {
+    // 重入次数减一
     int c = getState().decrementAndGet();
+    // 获取随机值
     String lockValue = threadLocalLockValue.get();
     // t1 t2 两个任务 , t1的任务时长超过redis的锁时长 , 导致t1还在进行任务的时候t2拿到了锁 , 这时候锁的拥有者线程为t2 ,
     // t1 完成任务后进行解锁操作 , 就会 throw IllegalMonitorStateException()
@@ -118,7 +125,9 @@ public class RedisDistributedLock implements DistributedLock {
           Thread.currentThread(), getExclusiveOwnerThread(), lockValue, redisOperation.getLockTimeout());
       throw new IllegalMonitorStateException();
     }
+    // redis 中解锁
     redisOperation.unlockRedisLock(lockId, lockValue);
+    // 如果重入次数为0 , 释放锁的持有线程
     if (c == 0) {
       setExclusiveOwnerThread(null);
       threadLocalLockValue.remove();

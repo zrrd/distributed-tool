@@ -11,6 +11,7 @@
     <modules>
         <module>distributed-lock</module>
         <module>distributed-test</module>
+        <module>distributed-id</module>
     </modules>
 
 
